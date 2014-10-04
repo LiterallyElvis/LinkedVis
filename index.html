@@ -1,0 +1,203 @@
+<html>
+	<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon"/>
+	<link type="text/css" rel="stylesheet" href="stylesheet.css"/>
+	<head>
+		<title>Pizza Goblin</title>
+		<script type="text/javascript" src="http://platform.linkedin.com/in.js">
+			api_key: 7515r9sepuulis
+			authorize: true
+		</script>
+        <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization',
+       'version':'1','packages':['timeline', 'corechart']}]}"></script>
+	</head>
+	<body onLoad="onLinkedInLoad()">
+		<script type="text/javascript">
+
+
+        function onLinkedInLoad() {
+			  IN.Event.on(IN, "auth", function() {onLinkedInLogin();});
+			  IN.Event.on(IN, "logout", function() {onLinkedInLogout();});
+			}
+
+			function onLinkedInLogout() {
+			  setLoginBadge(false);
+			}
+
+			function onLinkedInLogin() {
+			  // we pass field selectors as a single parameter (array of strings)
+			  IN.API.Profile("me")
+			    .fields(["location", "formattedName", "pictureUrl", "positions", "specialties", "connections", "numRecommenders",
+                          "industry", "headline", "summary", "skills", "numConnections", "jobBookmarks", "languages",
+                          "suggestions", "courses", "educations", "volunteer", "patents", "interests", "associations"])
+			    .result(function(result) {
+			      setLoginBadge(result.values[0]);
+			    })
+			    .error(function(err) {
+			      alert(err);
+			    });
+
+                IN.API.Connections("me")
+                        .fields("formattedName", "positions", "headline")
+                        .result(function(result) {
+                            formConnectionsHTML(result);
+                        });
+			}
+
+            function getJobInfo(profile) {
+
+                var jobs = new Array();
+
+                for (var i in profile.positions.values) {
+
+                    var job = new Object()
+
+                    job.title = profile.positions.values[i].title.toString();
+                    job.company = profile.positions.values[i].company;
+                    job.summary = profile.positions.values[i].summary;
+
+                    var startMonth = profile.positions.values[i].startDate.month;
+                    var startYear = profile.positions.values[i].startDate.year;
+                    job.startDate = new Date(startYear, startMonth, 1);
+                    var endMonth = undefined;
+                    var endYear = undefined;
+                    d = new Date();
+
+                    if(profile.positions.values[i].isCurrent){
+                        endMonth = d.getMonth();
+                        endYear = d.getFullYear();
+                    } else {
+                        endMonth = profile.positions.values[i].endDate.month;
+                        endYear = profile.positions.values[i].endDate.year;
+                    }
+
+                    job.endDate = new Date(endYear, endMonth, 1);
+                    var SECONDS_IN_A_YEAR = 31536000;
+                    job.duration = (((job.endDate - job.startDate) / 1000) / SECONDS_IN_A_YEAR).toFixed(2);
+
+                    jobs.push(job);
+                }
+                return jobs;
+            }
+
+            function getAttributeList(jobList, attribute) {
+                var results = new Array();
+                switch(attribute){
+                    case "industries":
+                        for (var i in jobList) {
+                            results.push(jobList[i].company.industry);
+                        }
+                        break;
+                    case "duration":
+                        for (var i in jobList) {
+                            results.push(jobList[i].duration);
+                        }
+                        break;
+                    case "titles":
+                        for (var i in jobList) {
+                            results.push(jobList[i].title);
+                        }
+                        break;
+                    case "dates":
+                        for (var i in jobList){
+                            var instance = new Array()
+                            instance.push(jobList[i].startDate);
+                            instance.push(jobList[i].endDate);
+                            results = results.concat(instance);
+                        }
+                        break;
+                }
+                return results;
+            }
+
+            function createTimeline(jobList, profile){
+                var id = -1;
+                var results = new Array();
+
+                if (profile.educations) {
+                    for (var i in profile.educations.values) {
+                        school = {};
+                        school.id = ++id;
+                        school.group = 0;
+                        school.content = profile.educations.values[i].schoolName;
+
+                        /* In a better, more verdent world, LinkedIn would ask for at least a month alongside
+                           a year value so that this graph could be more accurate, but alas, it is not. */
+
+                        // note that months are zero-based in the JavaScript Date object, so month 3 is April
+                        school.start = new Date(profile.educations.values[i].startDate.year, 0, 1);
+                        school.end = new Date(profile.educations.values[i].endDate.year, 11, 30);
+                        results.push(school);
+                    }
+                }
+                for (var i in jobList){
+                    job = {};
+                    job.id = ++id;
+                    job.group = 1;
+                    job.content = jobList[i].company.name;
+                    job.start = jobList[i].startDate;
+                    job.end = jobList[i].endDate;
+                    results.push(job);
+                }
+                return results;
+            }
+
+            function combineLists(keys, values){
+                var results = new Array();
+                for (var i in keys){
+                    item = {}
+                    item.key = keys[i];
+                    item.value = values[i];
+                    results.push(item);
+                }
+                return results;
+            }
+
+            function drawTimeline(columns, rows) {
+                var container = document.getElementById('schoolWorkChart');
+                var chart = new google.visualization.Timeline(container);
+                var dataTable = new google.visualization.DataTable();
+                var columns = [{type: 'string', id: 'President'}, {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
+                var rows = [[ 'Washington', new Date(1789, 3, 29), new Date(1797, 2, 3) ],
+                            [ 'Adams',      new Date(1797, 2, 3),  new Date(1801, 2, 3) ],
+                            [ 'Jefferson',  new Date(1801, 2, 3),  new Date(1809, 2, 3) ]];
+
+                for (var i in columns){ dataTable.addColumn(columns[i]); }
+
+                dataTable.addRows(rows);
+
+                chart.draw(dataTable);
+            }
+
+            function drawPieChart(source) {
+                var source = [['Task', 'Hours per Day'],
+                              ['Work',     11],
+                              ['Eat',      2],
+                              ['Commute',  2],
+                              ['Watch TV', 2],
+                              ['Sleep',    7]];
+
+                var data = google.visualization.arrayToDataTable(source);
+
+                var options = { title: 'My Career',
+                                pieHole: 0.5 };
+
+                var chart = new google.visualization.PieChart(document.getElementById('donutChart'));
+                chart.draw(data, options);
+            }
+
+			function setLoginBadge(profile) {
+			    if (!profile) {
+                    document.getElementById("background").innerHTML = "<p>You must log in!</p>";
+			    } else {
+                    drawTimeline();
+                    drawPieChart();
+                }
+            }
+        </script>
+        <div id="background">
+            <div id="linkedLogIn"><script type="IN/Login"></script></div>
+            <div id="donutChart"></div><br><br>
+            <div id="schoolWorkChart"></div>
+        </div>
+	</body>
+</html>

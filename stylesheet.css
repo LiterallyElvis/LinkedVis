@@ -1,0 +1,47 @@
+html {
+    font-family: sans-serif;
+    color: white;
+    fill: white;
+	/* Background pattern from subtlepatterns.com */
+    background-image: url('images/congruent_outline.png');
+}
+
+#background{
+    background-color: #7F7F7F;
+    opacity: 0.8;
+    border-radius: 15px;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 15px;
+}
+
+#background *{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#pieChart {
+    padding: 15px;
+}
+
+#profile {
+    z-index: -1;
+    clip-path: url(#clipping);
+}
+
+#introduction{
+    margin-left: 3em;
+}
+
+.arcGrp {
+    padding: 1.5em;
+    z-index: 1;
+}
+
+#schoolWorkChart {
+    box-sizing: border-box;
+    width: 100%;
+    height: 300px;
+}
