@@ -106,9 +106,11 @@
             var columns = [{type: 'string', id: 'Activity'}, {type: 'string', id: 'Name'},
                 {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
 
+            var options = { "height": 175 };
+
             for (var i in columns){ dataTable.addColumn(columns[i]); }
             dataTable.addRows(rows);
-            chart.draw(dataTable);
+            chart.draw(dataTable, options);
         }
 
         function createDonutData(jobList){
