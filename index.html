@@ -12,8 +12,6 @@
 	</head>
 	<body onLoad="onLinkedInLoad()">
 		<script type="text/javascript">
-
-
         function onLinkedInLoad() {
 			  IN.Event.on(IN, "auth", function() {onLinkedInLogin();});
 			  IN.Event.on(IN, "logout", function() {onLinkedInLogout();});
@@ -109,77 +107,68 @@
                 return results;
             }
 
-            function createTimeline(jobList, profile){
-                var id = -1;
+            function createTimelineData(jobList, profile){
                 var results = new Array();
 
                 if (profile.educations) {
                     for (var i in profile.educations.values) {
-                        school = {};
-                        school.id = ++id;
-                        school.group = 0;
-                        school.content = profile.educations.values[i].schoolName;
+                        var school = new Array();
+                        school.push("School");
+                        school.push(profile.educations.values[i].schoolName);
 
                         /* In a better, more verdent world, LinkedIn would ask for at least a month alongside
                            a year value so that this graph could be more accurate, but alas, it is not. */
-
+                        school.push(new Date(profile.educations.values[i].startDate.year, 0, 1));
+                        school.push(new Date(profile.educations.values[i].endDate.year, 11, 30));
                         // note that months are zero-based in the JavaScript Date object, so month 3 is April
-                        school.start = new Date(profile.educations.values[i].startDate.year, 0, 1);
-                        school.end = new Date(profile.educations.values[i].endDate.year, 11, 30);
                         results.push(school);
                     }
                 }
                 for (var i in jobList){
-                    job = {};
-                    job.id = ++id;
-                    job.group = 1;
-                    job.content = jobList[i].company.name;
-                    job.start = jobList[i].startDate;
-                    job.end = jobList[i].endDate;
+                    var job = new Array();
+                    job.push("Work");
+                    job.push(jobList[i].company.name);
+                    job.push(jobList[i].startDate);
+                    job.push(jobList[i].endDate);
                     results.push(job);
                 }
                 return results;
             }
 
-            function combineLists(keys, values){
+            function createDonutData(jobList){
                 var results = new Array();
-                for (var i in keys){
-                    item = {}
-                    item.key = keys[i];
-                    item.value = values[i];
-                    results.push(item);
+                results.push(["Title", "Duration"]);
+                for (var i in jobList){
+                    var job = new Array();
+                    job.push(jobList[i].title);
+                    job.push(parseFloat(jobList[i].duration));
+                    results.push(job);
                 }
                 return results;
             }
 
-            function drawTimeline(columns, rows) {
+            function drawTimeline(rows) {
                 var container = document.getElementById('schoolWorkChart');
                 var chart = new google.visualization.Timeline(container);
                 var dataTable = new google.visualization.DataTable();
-                var columns = [{type: 'string', id: 'President'}, {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
-                var rows = [[ 'Washington', new Date(1789, 3, 29), new Date(1797, 2, 3) ],
-                            [ 'Adams',      new Date(1797, 2, 3),  new Date(1801, 2, 3) ],
-                            [ 'Jefferson',  new Date(1801, 2, 3),  new Date(1809, 2, 3) ]];
+                var columns = [{type: 'string', id: 'Activity'}, {type: 'string', id: 'Name'},
+                               {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
 
                 for (var i in columns){ dataTable.addColumn(columns[i]); }
-
                 dataTable.addRows(rows);
-
                 chart.draw(dataTable);
             }
 
-            function drawPieChart(source) {
-                var source = [['Task', 'Hours per Day'],
-                              ['Work',     11],
-                              ['Eat',      2],
-                              ['Commute',  2],
-                              ['Watch TV', 2],
-                              ['Sleep',    7]];
+            function drawDonutChart(source) {
 
                 var data = google.visualization.arrayToDataTable(source);
 
                 var options = { title: 'My Career',
-                                pieHole: 0.5 };
+                                pieHole: 0.5, // what a variable name!
+                                chartArea: { width:'90%',
+                                             height:'90%'},
+                                pieSliceText: 'none',
+                                legend: {alignment: 'center'} };
 
                 var chart = new google.visualization.PieChart(document.getElementById('donutChart'));
                 chart.draw(data, options);
@@ -189,8 +178,12 @@
 			    if (!profile) {
                     document.getElementById("background").innerHTML = "<p>You must log in!</p>";
 			    } else {
-                    drawTimeline();
-                    drawPieChart();
+                    var jobList = getJobInfo(profile);
+                    var donutData = createDonutData(jobList);
+                    var timeLine = createTimelineData(jobList, profile);
+                    drawTimeline(timeLine);
+                    drawDonutChart(donutData);
+                    countWordInstances("Farts in your butt for fart");
                 }
             }
         </script>
