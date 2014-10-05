@@ -77,36 +77,6 @@
                 return jobs;
             }
 
-            function getAttributeList(jobList, attribute) {
-                var results = new Array();
-                switch(attribute){
-                    case "industries":
-                        for (var i in jobList) {
-                            results.push(jobList[i].company.industry);
-                        }
-                        break;
-                    case "duration":
-                        for (var i in jobList) {
-                            results.push(jobList[i].duration);
-                        }
-                        break;
-                    case "titles":
-                        for (var i in jobList) {
-                            results.push(jobList[i].title);
-                        }
-                        break;
-                    case "dates":
-                        for (var i in jobList){
-                            var instance = new Array()
-                            instance.push(jobList[i].startDate);
-                            instance.push(jobList[i].endDate);
-                            results = results.concat(instance);
-                        }
-                        break;
-                }
-                return results;
-            }
-
             function createTimelineData(jobList, profile){
                 var results = new Array();
 
@@ -135,6 +105,18 @@
                 return results;
             }
 
+            function drawTimeline(rows) {
+                var container = document.getElementById('schoolWorkChart');
+                var chart = new google.visualization.Timeline(container);
+                var dataTable = new google.visualization.DataTable();
+                var columns = [{type: 'string', id: 'Activity'}, {type: 'string', id: 'Name'},
+                    {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
+
+                for (var i in columns){ dataTable.addColumn(columns[i]); }
+                dataTable.addRows(rows);
+                chart.draw(dataTable);
+            }
+
             function createDonutData(jobList){
                 var results = new Array();
                 results.push(["Title", "Duration"]);
@@ -147,28 +129,16 @@
                 return results;
             }
 
-            function drawTimeline(rows) {
-                var container = document.getElementById('schoolWorkChart');
-                var chart = new google.visualization.Timeline(container);
-                var dataTable = new google.visualization.DataTable();
-                var columns = [{type: 'string', id: 'Activity'}, {type: 'string', id: 'Name'},
-                               {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
-
-                for (var i in columns){ dataTable.addColumn(columns[i]); }
-                dataTable.addRows(rows);
-                chart.draw(dataTable);
-            }
-
             function drawDonutChart(source) {
 
                 var data = google.visualization.arrayToDataTable(source);
 
                 var options = { title: 'My Career',
-                                pieHole: 0.5, // what a variable name!
-                                chartArea: { width:'90%',
-                                             height:'90%'},
-                                pieSliceText: 'none',
-                                legend: {alignment: 'center'} };
+                    pieHole: 0.5, // what a variable name!
+                    chartArea: { width:'90%',
+                        height:'90%'},
+                    pieSliceText: 'none',
+                    legend: {alignment: 'center'} };
 
                 var chart = new google.visualization.PieChart(document.getElementById('donutChart'));
                 chart.draw(data, options);
@@ -186,6 +156,7 @@
                     countWordInstances("Farts in your butt for fart");
                 }
             }
+
         </script>
         <div id="background">
             <div id="linkedLogIn"><script type="IN/Login"></script></div>
