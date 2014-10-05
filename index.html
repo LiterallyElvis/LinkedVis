@@ -71,6 +71,19 @@
             return jobs;
         }
 
+        function makeProfileHTML(profile){
+            var HTML = "";
+
+            var name = profile.formattedName;
+            var headline = profile.headline;
+            var interests = profile.interests;
+            var photo = profile.pictureUrl;
+            var position = profile.positions.values[0].title;
+            var company = profile.positions.values[0].company.name;
+
+            return HTML;
+        }
+
         function createTimelineData(jobList, profile){
             var results = new Array();
 
@@ -106,11 +119,9 @@
             var columns = [{type: 'string', id: 'Activity'}, {type: 'string', id: 'Name'},
                 {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
 
-            var options = { "height": 175 };
-
             for (var i in columns){ dataTable.addColumn(columns[i]); }
             dataTable.addRows(rows);
-            chart.draw(dataTable, options);
+            chart.draw(dataTable);
         }
 
         function createDonutData(jobList){
@@ -140,43 +151,48 @@
             chart.draw(data, options);
         }
 
-        function getWordCount(source){
+        function getWordCount(summary){
+            // Credit to Mike Grace: http://stackoverflow.com/a/4328722/1667207
+            summary = summary.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+            summary = summary.replace(/\s{2,}/g," ");
+            summary = summary.toLowerCase().split(" ").sort();
+
+            var exceptedWords = ["the", "to", "of", "and", "a",
+                "in", "it", "its", "for", "on",
+                "with", "as", "at", "by", "or", "an"];
+            var result = [['Word', 'Count']];
+
             //credit to Šime Vidas: http://stackoverflow.com/a/5668246/1667207
-            source = source.toLowerCase().split(" ");
             var words = new Array();
             var count = new Array();
-            var exceptedWords = ["the", "to", "of", "and", "a",
-                                 "in", "it", "its", "for", "on",
-                                 "with", "as", "at", "by", "or", "an"];
             var prev = undefined;
-            var result = [['Word', 'Count']];
-            source.sort();
 
-            for (var i = 0; i < source.length; i++) {
-                if (source[i] !== prev) {
-                    var exception = exceptedWords.indexOf(source[i]);
+            for (var i = 0; i < summary.length; i++) {
+                if (summary[i] !== prev) {
+                    var exception = exceptedWords.indexOf(summary[i]);
                     if (exception > -1) {
                     } else {
-                        words.push(source[i]);
+                        words.push(summary[i]);
                         count.push(1);
                     }
                 } else {
                     count[count.length - 1]++;
                 }
-                prev = source[i];
+                prev = summary[i];
             }
-                for (var i in words) {
-                    var match = []
-                    if( count[i] > 1){
-                        if( words[i] === "i" ){
-                            match[0] = "I";
-                        } else {
-                            match[0] = words[i];
-                        }
-                        match[1] = count[i];
-                        result.push(match);
-                    } else {}
-                }
+
+            for (var i in words) {
+                var match = []
+                if( count[i] > 1){
+                    if( words[i] === "i" ){
+                        match[0] = "I";
+                    } else {
+                        match[0] = words[i];
+                    }
+                    match[1] = count[i];
+                    result.push(match);
+                } else {}
+            }
             return result;
         }
 
@@ -184,9 +200,9 @@
             var data = google.visualization.arrayToDataTable(wordCount);
 
             var options = {
-                title: 'Summary word frequency',
-                hAxis: {title: 'Word', titleTextStyle: {color: 'blue'}}
-            };
+                            title: 'Summary word frequency',
+                            hAxis: {title: 'word', titleTextStyle: {color: 'blue'}}
+                          };
 
             var chart = new google.visualization.ColumnChart(document.getElementById('wordCountChart'));
 
@@ -198,6 +214,9 @@
                 document.getElementById("background").innerHTML = "<p>You must log in!</p>";
             } else {
                 var jobList = getJobInfo(profile);
+
+                var profileHTML = makeProfileHTML(profile);
+
                 var donutData = createDonutData(jobList);
                 var timeLine = createTimelineData(jobList, profile);
                 var wordCount = getWordCount(profile.summary);
@@ -210,6 +229,7 @@
         </script>
         <div id="background">
             <div id="linkedLogIn"><script type="IN/Login"></script></div>
+            <div id="profileInfo"></div>
             <div id="donutChart"></div>
             <div id="schoolWorkChart"></div>
             <div id="wordCountChart"></div>
