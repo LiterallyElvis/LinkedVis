@@ -18,7 +18,7 @@
 			}
 
 			function onLinkedInLogout() {
-			  setLoginBadge(false);
+			  getThingsDone(false);
 			}
 
 			function onLinkedInLogin() {
@@ -28,7 +28,7 @@
                           "industry", "headline", "summary", "skills", "numConnections", "jobBookmarks", "languages",
                           "suggestions", "courses", "educations", "volunteer", "patents", "interests", "associations"])
 			    .result(function(result) {
-			      setLoginBadge(result.values[0]);
+			      getThingsDone(result.values[0]);
 			    })
 			    .error(function(err) {
 			      alert(err);
@@ -144,7 +144,7 @@
                 chart.draw(data, options);
             }
 
-			function setLoginBadge(profile) {
+			function getThingsDone(profile) {
 			    if (!profile) {
                     document.getElementById("background").innerHTML = "<p>You must log in!</p>";
 			    } else {
@@ -153,7 +153,6 @@
                     var timeLine = createTimelineData(jobList, profile);
                     drawTimeline(timeLine);
                     drawDonutChart(donutData);
-                    countWordInstances("Farts in your butt for fart");
                 }
             }
 
