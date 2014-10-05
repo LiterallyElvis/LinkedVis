@@ -24,9 +24,8 @@
         function onLinkedInLogin() {
           // we pass field selectors as a single parameter (array of strings)
           IN.API.Profile("me")
-            .fields(["location", "formattedName", "pictureUrl", "positions", "specialties", "connections", "numRecommenders",
-                      "industry", "headline", "summary", "skills", "numConnections", "jobBookmarks", "languages",
-                      "suggestions", "courses", "educations", "volunteer", "patents", "interests", "associations"])
+            .fields(["location", "formattedName", "pictureUrl", "positions",
+                      "industry", "headline", "summary", "educations", "interests"])
             .result(function(result) {
               getThingsDone(result.values[0]);
             })
@@ -73,13 +72,15 @@
 
         function makeProfileHTML(profile){
             var HTML = "";
-
             var name = profile.formattedName;
             var headline = profile.headline;
-            var interests = profile.interests;
+            //var interests = profile.interests;
             var photo = profile.pictureUrl;
             var position = profile.positions.values[0].title;
             var company = profile.positions.values[0].company.name;
+
+            HTML += "<img src=\"" + photo + "\" height=\"100\" width=\"100\" id=\"profile-photo\"/>";
+            HTML += "<span><p>" + name + ", " + position + " at " + company + "<p><p>" + headline + "</p></span>";
 
             return HTML;
         }
@@ -119,9 +120,11 @@
             var columns = [{type: 'string', id: 'Activity'}, {type: 'string', id: 'Name'},
                 {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
 
+            var options = { enableInteractivity: false };
+
             for (var i in columns){ dataTable.addColumn(columns[i]); }
             dataTable.addRows(rows);
-            chart.draw(dataTable);
+            chart.draw(dataTable, options);
         }
 
         function createDonutData(jobList){
@@ -214,24 +217,21 @@
                 document.getElementById("background").innerHTML = "<p>You must log in!</p>";
             } else {
                 var jobList = getJobInfo(profile);
-
-                var profileHTML = makeProfileHTML(profile);
-
                 var donutData = createDonutData(jobList);
                 var timeLine = createTimelineData(jobList, profile);
                 var wordCount = getWordCount(profile.summary);
+                document.getElementById("profileInfo").innerHTML = makeProfileHTML(profile);
                 drawTimeline(timeLine);
                 drawDonutChart(donutData);
                 drawWordChart(wordCount);
             }
         }
-
         </script>
         <div id="background">
             <div id="linkedLogIn"><script type="IN/Login"></script></div>
-            <div id="profileInfo"></div>
-            <div id="donutChart"></div>
-            <div id="schoolWorkChart"></div>
+            <div id="profileInfo" class="profile"></div>
+            <div id="donutChart" style="position: relative; margin-top: 5em;"></div>
+            <div id="schoolWorkChart" style="position: relative; margin-bottom: -70px;"></div>
             <div id="wordCountChart"></div>
         </div>
 	</body>
