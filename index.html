@@ -43,15 +43,14 @@
 
                 job.title = profile.positions.values[i].title.toString();
                 job.company = profile.positions.values[i].company;
-                job.summary = profile.positions.values[i].summary || "";
 
                 var startMonth = profile.positions.values[i].startDate.month;
                 var startYear = profile.positions.values[i].startDate.year;
                 job.startDate = new Date(startYear, startMonth, 1);
+
                 var endMonth = undefined;
                 var endYear = undefined;
                 d = new Date();
-
                 if(profile.positions.values[i].isCurrent){
                     endMonth = d.getMonth();
                     endYear = d.getFullYear();
@@ -70,14 +69,17 @@
 
         function makeProfileHTML(profile){
             var HTML = "";
+            var defaultImage = "https://static.licdn.com/scds/common/u/images/themes/katy/ghosts/person/ghost_person_200x200_v1.png";
             var name = profile.formattedName;
             var headline = profile.headline || "";
-            var photo = profile.pictureUrl || "https://static.licdn.com/scds/common/u/images/themes/katy/ghosts/person/ghost_person_200x200_v1.png";
-            var position = profile.positions.values[0].title;
-            var company = profile.positions.values[0].company.name;
+            var photo = profile.pictureUrl || defaultImage;
+            var position = profile.positions.values[0].title + " at " + profile.positions.values[0].company.name;
 
             HTML += "<img src=\"" + photo + "\" height=\"100\" width=\"100\" id=\"profilePhoto\"/>";
-            HTML += "<p id=\"info\">" + name + ", " + position + " at " + company + "</p><p>" + headline + "</p>";
+            HTML += "<p id=\"info\">" + name + ", " + position + "</p>";
+            if( position != headline){
+                HTML += "<p>" + headline + "</p>";
+            }
 
             return HTML;
         }
@@ -117,7 +119,7 @@
             var chart = new google.visualization.Timeline(container);
             var dataTable = new google.visualization.DataTable();
             var columns = [{type: 'string', id: 'Activity'}, {type: 'string', id: 'Name'},
-                {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
+                           {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
             var options = { enableInteractivity: false };
             for (var i in columns){ dataTable.addColumn(columns[i]); }
 
@@ -153,13 +155,13 @@
             // Credit to Mike Grace: http://stackoverflow.com/a/4328722/1667207
             summary = summary.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,""); // eliminate punctuation
             summary = summary.replace(/\s{2,}/g," ");                       // eliminate multiple spaces
-            summary = summary.replace(/[^\x00-\x7F]+/g, "");
+            summary = summary.replace(/[^\x00-\x7F]+/g, "");                // replaces non-ASCII characters.
             summary = summary.toLowerCase().split(" ");
 
             var exceptedWords = ["the", "to", "of", "and", "a", "an",
                                  "in", "it", "its", "for", "on", "this",
                                  "is", "with", "as", "at", "by", "or"];
-            var result = [['Word', 'Count']];
+            var results = [['Word', 'Count']];
             var words = new Object();
 
             //Inspired by Šime Vidas: http://stackoverflow.com/a/5668246/1667207
@@ -184,17 +186,22 @@
                             hit[0] = key;
                             hit[1] = words[key];
                         }
-                        result.push(hit);
+                        results.push(hit);
                     } else {}
                 }
             }
-            return result;
+
+            if (results.length == 1){
+                return undefined;
+            } else {
+                return results;
+            }
         }
 
         function drawWordChart(wordCount) {
             var data = google.visualization.arrayToDataTable(wordCount);
 
-            var options = { title: 'Summary words that appear more than once',
+            var options = { title: 'Words in LinkedIn summary that appear more than once',
                             hAxis: { titleTextStyle: {color: 'blue'}}};
 
             var chart = new google.visualization.ColumnChart(document.getElementById('wordCountChart'));
@@ -214,7 +221,9 @@
                 drawTimeline(timeLine);
                 if(profile.summary){
                     var wordCount = getWordCount(profile.summary);
-                    drawWordChart(wordCount);
+                    if (wordCount){
+                        drawWordChart(wordCount);
+                    }
                 }
             }
         }
