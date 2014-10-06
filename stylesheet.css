@@ -10,7 +10,7 @@ html {
     background-color: #7F7F7F;
     opacity: 0.8;
     border-radius: 15px;
-    width: 70%;
+    width: 50%;
     margin-left: auto;
     margin-right: auto;
     padding: 15px;
@@ -20,7 +20,6 @@ html {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: auto;
 }
 
 .profile{
