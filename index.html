@@ -74,13 +74,12 @@
             var HTML = "";
             var name = profile.formattedName;
             var headline = profile.headline || "";
-            var interests = profile.interests || ""
             var photo = profile.pictureUrl || "https://static.licdn.com/scds/common/u/images/themes/katy/ghosts/person/ghost_person_200x200_v1.png";
             var position = profile.positions.values[0].title;
             var company = profile.positions.values[0].company.name;
 
-            HTML += "<img src=\"" + photo + "\" height=\"100\" width=\"100\" id=\"profile-photo\"/>";
-            HTML += name + ", " + position + " at " + company + "<br><p>" + headline + "</p>";
+            HTML += "<img src=\"" + photo + "\" height=\"100\" width=\"100\" id=\"profilePhoto\"/>";
+            HTML += "<p id=\"info\">" + name + ", " + position + " at " + company + "</p><p>" + headline + "</p>";
 
             return HTML;
         }
@@ -146,11 +145,10 @@
             var data = google.visualization.arrayToDataTable(sourceData);
 
             var options = { title: 'My Career',
-                pieHole: 0.5, // what a variable name!
-                chartArea: { width:'90%',
-                    height:'90%'},
-                pieSliceText: 'none',
-                legend: {alignment: 'center'} };
+                            chartArea: { width:'90%',
+                                         height:'90%'},
+                            pieSliceText: 'none',
+                            legend: {alignment: 'center'} };
 
             var chart = new google.visualization.PieChart(document.getElementById('donutChart'));
             chart.draw(data, options);
@@ -199,13 +197,8 @@
         function drawWordChart(wordCount) {
             var data = google.visualization.arrayToDataTable(wordCount);
 
-            var options = {
-                            title: 'Summary word frequency',
-                            hAxis: {
-                                    title: 'word',
-                                    titleTextStyle: {color: 'blue'}
-                                   }
-                          };
+            var options = { title: 'Summary word frequency',
+                            hAxis: { titleTextStyle: {color: 'blue'}}};
 
             var chart = new google.visualization.ColumnChart(document.getElementById('wordCountChart'));
 
