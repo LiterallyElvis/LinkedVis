@@ -39,15 +39,16 @@
 
             for( var i in profile.positions.values ){
                 var job = new Object()
+
                 job.title = profile.positions.values[i].title.toString();
                 job.company = profile.positions.values[i].company;
                 var startMonth = profile.positions.values[i].startDate.month;
                 var startYear = profile.positions.values[i].startDate.year;
                 job.startDate = new Date(startYear, startMonth, 1);
-
                 var endMonth = undefined;
                 var endYear = undefined;
                 d = new Date();
+
                 if( profile.positions.values[i].isCurrent ){
                     endMonth = d.getMonth();
                     endYear = d.getFullYear();
@@ -73,6 +74,7 @@
 
             HTML += "<img src=\"" + photo + "\" height=\"100\" width=\"100\" id=\"profilePhoto\"/>";
             HTML += "<p id=\"info\">" + name + ", " + position + "</p>";
+
             if( position != headline ){
                 HTML += "<p>" + headline + "</p>";
             }
@@ -134,6 +136,7 @@
                     results.push(school);
                 }
             }
+
             for( var i in jobList ){
                 var job = new Array();
                 job.push("Work");
@@ -197,7 +200,7 @@
                 }
             }
 
-             if( results.length == 1  ){
+             if( results.length == 1 ){
                 return undefined;
             } else {
                 return results;
