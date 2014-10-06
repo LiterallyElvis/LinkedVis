@@ -98,7 +98,7 @@
                        a year value so that this graph could be more accurate, but alas, it is not. */
                     // note that months are zero-based in the JavaScript Date object, so month 3 is April
                     var startDate = new Date(profile.educations.values[i].startDate.year, 0, 1) || new Date(0, 0, 0)
-                    var endDate = new Date(profile.educations.values[i].endDate.year, 0, 1) || new Date(0, 0, 0)
+                    var endDate = new Date(profile.educations.values[i].endDate.year, 11, 30) || new Date(0, 0, 0)
                     school.push(startDate);
                     school.push(endDate);
                     results.push(school);
