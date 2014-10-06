@@ -1,44 +1,23 @@
 <html>
-	<link type="text/css" rel="stylesheet" href="stylesheet.css"/>
-	<head>
-		<title>LinkedVis</title>
-		<script type="text/javascript" src="http://platform.linkedin.com/in.js">
-			api_key: 7515r9sepuulis
-			authorize: true
-		</script>
+    <link type="text/css" rel="stylesheet" href="stylesheet.css"/>
+    <head>
+        <title>LinkedVis</title>
+        <script type="text/javascript" src="http://platform.linkedin.com/in.js">
+            api_key: 7515r9sepuulis
+            authorize: true
+        </script>
         <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization',
        'version':'1','packages':['timeline', 'corechart']}]}"></script>
-	</head>
-	<body onLoad="onLinkedInLoad()">
-		<script type="text/javascript">
+    </head>
+    <body onLoad="onLinkedInLoad()">
+        <script type="text/javascript">
         var SECONDS_IN_A_YEAR = 31536000;
-        function onLinkedInLoad(){
-			  IN.Event.on(IN, "auth", function() {onLinkedInLogin();});
-			  IN.Event.on(IN, "logout", function() {onLinkedInLogout();});
-			}
 
-        function onLinkedInLogout(){
-          getThingsDone(false);
-        }
+        function getJobInfo(profile) {
+            var jobs = [];
 
-        function onLinkedInLogin(){
-          // we pass field selectors as a single parameter (array of strings)
-          IN.API.Profile("me")
-            .fields(["location", "formattedName", "pictureUrl", "positions",
-                      "industry", "headline", "summary", "educations", "interests"])
-            .result(function(result) {
-              getThingsDone(result.values[0]);
-            })
-            .error(function(err) {
-              alert(err);
-            });
-        }
-
-        function getJobInfo(profile){
-            var jobs = new Array();
-
-            for( var i in profile.positions.values ){
-                var job = new Object()
+            for (var i in profile.positions.values) {
+                var job = new Object();
 
                 job.title = profile.positions.values[i].title.toString();
                 job.company = profile.positions.values[i].company;
@@ -49,7 +28,7 @@
                 var endYear = undefined;
                 d = new Date();
 
-                if( profile.positions.values[i].isCurrent ){
+                if (profile.positions.values[i].isCurrent) {
                     endMonth = d.getMonth();
                     endYear = d.getFullYear();
                 } else {
@@ -64,7 +43,7 @@
             return jobs;
         }
 
-        function makeProfileHTML(profile){
+        function makeProfileHTML(profile) {
             var HTML = "";
             var defaultImage = "https://static.licdn.com/scds/common/u/images/themes/katy/ghosts/person/ghost_person_200x200_v1.png";
             var name = profile.formattedName;
@@ -75,28 +54,28 @@
             HTML += "<img src=\"" + photo + "\" height=\"100\" width=\"100\" id=\"profilePhoto\"/>";
             HTML += "<p id=\"info\">" + name + ", " + position + "</p>";
 
-            if( position != headline ){
+            if (position != headline) {
                 HTML += "<p>" + headline + "</p>";
             }
 
             return HTML;
         }
 
-        function createPieData(jobList){
-            var results = new Array();
+        function createPieData(jobList) {
+            var results = [];
             results.push(["Title", "Duration"]);
-            for( var i in jobList ){
-                var job = new Array();
+            for (var i in jobList) {
+                var job = [];
                 job.push(jobList[i].title);
                 job.push(parseFloat(jobList[i].duration));
                 results.push(job);
             }
 
-            for( var i in results ){
-                if( i == 0 ){}
+            for (var i in results) {
+                if( i === 0 ){}
                 var comparison = results[i][0];
-                for( var j in results ){
-                     if( results[j][0] == comparison && j != i ){
+                for ( var j in results ) {
+                     if (results[j][0] == comparison && j != i) {
                         results[i][1] += results[j][1];
                         results.pop(results[j]);
                     }
@@ -105,7 +84,7 @@
             return results;
         }
 
-        function drawPieChart(sourceData){
+        function drawPieChart(sourceData) {
             var data = google.visualization.arrayToDataTable(sourceData);
             var options = { title: 'Career Title Distribution',
                             chartArea: { width: '90%',
@@ -117,28 +96,28 @@
             chart.draw(data, options);
         }
 
-        function createTimelineData(jobList, profile){
-            var results = new Array();
+        function createTimelineData(jobList, profile) {
+            var results = [];
 
-            if( profile.educations ){
-                for( var i in profile.educations.values ){
-                    var school = new Array();
+            if (profile.educations) {
+                for (var i in profile.educations.values) {
+                    var school = [];
                     school.push("School");
                     school.push(profile.educations.values[i].schoolName);
 
                     /* In a better, more verdant world, LinkedIn would ask for at least a month alongside
                      a year value so that this graph could be more accurate, but alas, it is not. */
                     // note that months are zero-based in the JavaScript Date object, so month 3 is April
-                    var startDate = new Date(profile.educations.values[i].startDate.year, 0, 1) || new Date(0, 0, 0)
-                    var endDate = new Date(profile.educations.values[i].endDate.year, 11, 30) || new Date(0, 0, 0)
+                    var startDate = new Date(profile.educations.values[i].startDate.year, 0, 1) || new Date(0, 0, 0);
+                    var endDate = new Date(profile.educations.values[i].endDate.year, 11, 30) || new Date(0, 0, 0);
                     school.push(startDate);
                     school.push(endDate);
                     results.push(school);
                 }
             }
 
-            for( var i in jobList ){
-                var job = new Array();
+            for (var i in jobList) {
+                var job = [];
                 job.push("Work");
                 job.push(jobList[i].company.name);
                 job.push(jobList[i].startDate);
@@ -148,19 +127,19 @@
             return results;
         }
 
-        function drawTimeline(rows){
+        function drawTimeline(rows) {
             var container = document.getElementById('schoolWorkChart');
             var chart = new google.visualization.Timeline(container);
             var dataTable = new google.visualization.DataTable();
             var columns = [{type: 'string', id: 'Activity'}, {type: 'string', id: 'Name'},
                            {type: 'date', id: 'Start'}, {type: 'date', id: 'End'}];
-            for( var i in columns ){ dataTable.addColumn(columns[i]);}
+            for (var i in columns){ dataTable.addColumn(columns[i]);}
 
             dataTable.addRows(rows);
             chart.draw(dataTable);
         }
 
-        function getWordCount(summary){
+        function getWordCount(summary) {
             // Credit to Mike Grace: http://stackoverflow.com/a/4328722/1667207
             summary = summary.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,""); // eliminate punctuation
             summary = summary.replace(/\s{2,}/g," ");                       // eliminate multiple spaces
@@ -174,9 +153,9 @@
             var words = new Object();
 
             //Inspired by Šime Vidas: http://stackoverflow.com/a/5668246/1667207
-            for( var i = 0; i < summary.length; i++ ){
-                 if( isNaN(summary[i]) ){
-                     if( summary[i] in words ){
+            for (var i = 0; i < summary.length; i++) {
+                if (isNaN(summary[i])) {
+                    if (summary[i] in words) {
                         words[summary[i]]++;
                     } else {
                         words[summary[i]] = 1;
@@ -184,11 +163,11 @@
                 }
             }
 
-            for( var key in words ){
-                 if( exceptedWords.indexOf(key) == -1 ){
-                     if( words[key] > 1 ){
-                        var hit = new Array();
-                         if( key === "i" ){
+            for (var key in words) {
+                 if (exceptedWords.indexOf(key) == -1) {
+                     if (words[key] > 1) {
+                        var hit = [];
+                         if (key === "i") {
                             hit[0] = "I";
                             hit[1] = words[key];
                         } else {
@@ -196,18 +175,18 @@
                             hit[1] = words[key];
                         }
                         results.push(hit);
-                    } else {}
+                    }
                 }
             }
 
-             if( results.length == 1 ){
+             if (results.length == 1) {
                 return undefined;
             } else {
                 return results;
             }
         }
 
-        function drawWordChart(wordCount){
+        function drawWordChart(wordCount) {
             var data = google.visualization.arrayToDataTable(wordCount);
 
             var options = { title: 'Words in LinkedIn summary that appear more than once',
@@ -218,8 +197,8 @@
             chart.draw(data, options);
         }
 
-        function getThingsDone(profile){
-             if( !profile ){
+        function getThingsDone(profile) {
+             if (!profile) {
                 document.getElementById("background").innerHTML = "<p>You must log in!</p>";
             } else {
                 var jobList = getJobInfo(profile);
@@ -228,9 +207,9 @@
                 drawPieChart(pieData);
                 var timelineData = createTimelineData(jobList, profile);
                 drawTimeline(timelineData);
-                if( profile.summary ){
+                if (profile.summary) {
                     var wordCount = getWordCount(profile.summary);
-                    if( wordCount  ){
+                    if (wordCount) {
                         drawWordChart(wordCount);
                     } else {
                         document.getElementById("wordCountChart").innerHTML = "<p>Your summary has no duplicate words, good job!</p>";
@@ -248,5 +227,5 @@
             <div id="schoolWorkChart" style="position: relative; margin-bottom: -70px;"></div>
             <div id="wordCountChart"></div>
         </div>
-	</body>
+    </body>
 </html>
