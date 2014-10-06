@@ -234,6 +234,9 @@
                     var wordCount = getWordCount(profile.summary);
                     if (wordCount){
                         drawWordChart(wordCount);
+                    } else {
+                        var noWordChart = "<p>No summary was found to perform analysis of!</p>";
+                        document.getElementById("wordCountChart").innerHTML = noWordChart;
                     }
                 }
             }
