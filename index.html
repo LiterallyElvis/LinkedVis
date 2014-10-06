@@ -145,10 +145,10 @@
             var data = google.visualization.arrayToDataTable(sourceData);
 
             var options = { title: 'My Career',
-                            chartArea: { width:'90%',
-                                         height:'90%'},
-                            pieSliceText: 'none',
-                            legend: {alignment: 'center'} };
+                            chartArea: { width: '100%',
+                                         height:'100%'},
+                            legend: {alignment: 'center'},
+                            is3D: true };
 
             var chart = new google.visualization.PieChart(document.getElementById('donutChart'));
             chart.draw(data, options);
@@ -223,7 +223,7 @@
         <div id="background">
             <div id="linkedLogIn"><script type="IN/Login"></script></div>
             <div id="profileInfo" class="profile"></div>
-            <div id="donutChart" style="position: relative; margin-top: 5em;"></div>
+            <div id="donutChart" style="position: relative; width: 60%; margin-top: 4em;"></div>
             <div id="schoolWorkChart" style="position: relative; margin-bottom: -70px;"></div>
             <div id="wordCountChart"></div>
         </div>

@@ -9,7 +9,7 @@ html {
     background-color: #7F7F7F;
     opacity: 0.8;
     border-radius: 15px;
-    width: 50%;
+    width: 60%;
     margin-left: auto;
     margin-right: auto;
     padding: 15px;
@@ -22,18 +22,19 @@ html {
 }
 
 .profile{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
     text-shadow: black 1px 1px 1px;
 }
 
 #info{
     vertical-align: middle;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 #profilePhoto{
     border-radius: 50%;
-    float:left;
+    float: left;
     margin-right: 25px;
 }
 
