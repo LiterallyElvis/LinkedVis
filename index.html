@@ -127,7 +127,7 @@
             chart.draw(dataTable, options);
         }
 
-        function createDonutData(jobList){
+        function createPieData(jobList){
             var results = new Array();
             results.push(["Title", "Duration"]);
             for (var i in jobList){
@@ -215,7 +215,7 @@
             } else {
                 var jobList = getJobInfo(profile);
                 document.getElementById("profileInfo").innerHTML = makeProfileHTML(profile);
-                var pieData = createDonutData(jobList);
+                var pieData = createPieData(jobList);
                 drawPieChart(pieData);
                 var timeLine = createTimelineData(jobList, profile);
                 drawTimeline(timeLine);
