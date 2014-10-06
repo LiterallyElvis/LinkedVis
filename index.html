@@ -160,43 +160,38 @@
             // Credit to Mike Grace: http://stackoverflow.com/a/4328722/1667207
             summary = summary.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,""); // eliminate punctuation
             summary = summary.replace(/\s{2,}/g," ");                       // eliminate multiple spaces
-            summary = summary.toLowerCase().split(" ").sort();
+            summary = summary.toLowerCase().split(" ");
 
-            var exceptedWords = ["the", "to", "of", "and", "a",
-                "in", "it", "its", "for", "on",
-                "with", "as", "at", "by", "or", "an"];
+            var exceptedWords = ["the", "to", "of", "and", "a", "an",
+                                 "in", "it", "its", "for", "on",
+                                 "with", "as", "at", "by", "or"];
             var result = [['Word', 'Count']];
 
-            //credit to Šime Vidas: http://stackoverflow.com/a/5668246/1667207
-            var words = new Array();
-            var count = new Array();
-            var prev = undefined;
+            //Inspired by Šime Vidas: http://stackoverflow.com/a/5668246/1667207
+            var words = new Object();
 
             for (var i = 0; i < summary.length; i++) {
-                if (summary[i] !== prev) {
-                    var exception = exceptedWords.indexOf(summary[i]);
-                    if (exception > -1) {
-                    } else {
-                        words.push(summary[i]);
-                        count.push(1);
-                    }
+                if (summary[i] in words) {
+                    words[summary[i]]++;
                 } else {
-                    count[count.length - 1]++;
+                    words[summary[i]] = 1;
                 }
-                prev = summary[i];
             }
 
-            for (var i in words) {
-                var match = []
-                if( count[i] > 1){
-                    if( words[i] === "i" ){
-                        match[0] = "I";
-                    } else {
-                        match[0] = words[i];
-                    }
-                    match[1] = count[i];
-                    result.push(match);
-                } else {}
+            for (var key in words){
+                if (exceptedWords.indexOf(key) == -1) {
+                    if (words[key] > 1) {
+                        var hit = new Array();
+                        if (key === "i") {
+                            hit[0] = "I";
+                            hit[1] = words[key];
+                        } else {
+                            hit[0] = key;
+                            hit[1] = words[key];
+                        }
+                        result.push(hit);
+                    } else {}
+                }
             }
             return result;
         }
@@ -206,7 +201,10 @@
 
             var options = {
                             title: 'Summary word frequency',
-                            hAxis: {title: 'word', titleTextStyle: {color: 'blue'}}
+                            hAxis: {
+                                    title: 'word',
+                                    titleTextStyle: {color: 'blue'}
+                                   }
                           };
 
             var chart = new google.visualization.ColumnChart(document.getElementById('wordCountChart'));
