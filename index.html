@@ -12,6 +12,7 @@
 	</head>
 	<body onLoad="onLinkedInLoad()">
 		<script type="text/javascript">
+        var SECONDS_IN_A_YEAR = 31536000;
         function onLinkedInLoad() {
 			  IN.Event.on(IN, "auth", function() {onLinkedInLogin();});
 			  IN.Event.on(IN, "logout", function() {onLinkedInLogout();});
@@ -44,7 +45,7 @@
 
                 job.title = profile.positions.values[i].title.toString();
                 job.company = profile.positions.values[i].company;
-                job.summary = profile.positions.values[i].summary;
+                job.summary = profile.positions.values[i].summary || "";
 
                 var startMonth = profile.positions.values[i].startDate.month;
                 var startYear = profile.positions.values[i].startDate.year;
@@ -62,7 +63,6 @@
                 }
 
                 job.endDate = new Date(endYear, endMonth, 1);
-                var SECONDS_IN_A_YEAR = 31536000;
                 job.duration = (((job.endDate - job.startDate) / 1000) / SECONDS_IN_A_YEAR).toFixed(2);
 
                 jobs.push(job);
@@ -73,14 +73,14 @@
         function makeProfileHTML(profile){
             var HTML = "";
             var name = profile.formattedName;
-            var headline = profile.headline;
-            //var interests = profile.interests;
-            var photo = profile.pictureUrl;
+            var headline = profile.headline || "";
+            var interests = profile.interests || ""
+            var photo = profile.pictureUrl || "https://static.licdn.com/scds/common/u/images/themes/katy/ghosts/person/ghost_person_200x200_v1.png";
             var position = profile.positions.values[0].title;
             var company = profile.positions.values[0].company.name;
 
             HTML += "<img src=\"" + photo + "\" height=\"100\" width=\"100\" id=\"profile-photo\"/>";
-            HTML += "<span><p>" + name + ", " + position + " at " + company + "<p><p>" + headline + "</p></span>";
+            HTML += name + ", " + position + " at " + company + "<br><p>" + headline + "</p>";
 
             return HTML;
         }
@@ -94,11 +94,13 @@
                     school.push("School");
                     school.push(profile.educations.values[i].schoolName);
 
-                    /* In a better, more verdent world, LinkedIn would ask for at least a month alongside
+                    /* In a better, more verdant world, LinkedIn would ask for at least a month alongside
                        a year value so that this graph could be more accurate, but alas, it is not. */
-                    school.push(new Date(profile.educations.values[i].startDate.year, 0, 1));
-                    school.push(new Date(profile.educations.values[i].endDate.year, 11, 30));
                     // note that months are zero-based in the JavaScript Date object, so month 3 is April
+                    var startDate = new Date(profile.educations.values[i].startDate.year, 0, 1) || new Date(0, 0, 0)
+                    var endDate = new Date(profile.educations.values[i].endDate.year, 0, 1) || new Date(0, 0, 0)
+                    school.push(startDate);
+                    school.push(endDate);
                     results.push(school);
                 }
             }
@@ -156,8 +158,8 @@
 
         function getWordCount(summary){
             // Credit to Mike Grace: http://stackoverflow.com/a/4328722/1667207
-            summary = summary.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-            summary = summary.replace(/\s{2,}/g," ");
+            summary = summary.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,""); // eliminate punctuation
+            summary = summary.replace(/\s{2,}/g," ");                       // eliminate multiple spaces
             summary = summary.toLowerCase().split(" ").sort();
 
             var exceptedWords = ["the", "to", "of", "and", "a",
