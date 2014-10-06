@@ -11,21 +11,45 @@
     </head>
     <body onLoad="onLinkedInLoad()">
         <script type="text/javascript">
+		function onLinkedInLoad(){
+			  IN.Event.on(IN, "auth", function() {onLinkedInLogin();});
+			  IN.Event.on(IN, "logout", function() {onLinkedInLogout();});
+			}
+
+        function onLinkedInLogout(){
+          getThingsDone(false);
+        }
+
+        function onLinkedInLogin(){
+          // we pass field selectors as a single parameter (array of strings)
+          IN.API.Profile("me")
+            .fields(["location", "formattedName", "pictureUrl", "positions",
+                      "industry", "headline", "summary", "educations", "interests"])
+            .result(function(result) {
+              getThingsDone(result.values[0]);
+            })
+            .error(function(err) {
+              alert(err);
+            });
+        }
+		
         var SECONDS_IN_A_YEAR = 31536000;
 
         function getJobInfo(profile) {
-            var jobs = [];
+            var career = [];
 
             for (var i in profile.positions.values) {
-                var job = new Object();
+                var job = {};
 
                 job.title = profile.positions.values[i].title.toString();
                 job.company = profile.positions.values[i].company;
+                
                 var startMonth = profile.positions.values[i].startDate.month;
                 var startYear = profile.positions.values[i].startDate.year;
                 job.startDate = new Date(startYear, startMonth, 1);
-                var endMonth = undefined;
-                var endYear = undefined;
+                
+                var endMonth = null;
+                var endYear = null;
                 d = new Date();
 
                 if (profile.positions.values[i].isCurrent) {
@@ -38,23 +62,22 @@
 
                 job.endDate = new Date(endYear, endMonth, 1);
                 job.duration = (((job.endDate - job.startDate) / 1000) / SECONDS_IN_A_YEAR).toFixed(2);
-                jobs.push(job);
+                career.push(job);
             }
-            return jobs;
+            return career;
         }
 
         function makeProfileHTML(profile) {
-            var HTML = "";
             var defaultImage = "https://static.licdn.com/scds/common/u/images/themes/katy/ghosts/person/ghost_person_200x200_v1.png";
             var name = profile.formattedName;
             var headline = profile.headline || "";
             var photo = profile.pictureUrl || defaultImage;
             var position = profile.positions.values[0].title + " at " + profile.positions.values[0].company.name;
 
-            HTML += "<img src=\"" + photo + "\" height=\"100\" width=\"100\" id=\"profilePhoto\"/>";
+            var HTML = "<img src=\"" + photo + "\" height=\"100\" width=\"100\" id=\"profilePhoto\"/>";
             HTML += "<p id=\"info\">" + name + ", " + position + "</p>";
 
-            if (position != headline) {
+            if (position != headline) { // LinkedIn's default headline is just the position as formatted here.
                 HTML += "<p>" + headline + "</p>";
             }
 
@@ -72,10 +95,13 @@
             }
 
             for (var i in results) {
-                if( i === 0 ){}
+                if( i === 0 ){
+                    // This index is always the result declared on the second line of this function.
+                }
                 var comparison = results[i][0];
                 for ( var j in results ) {
                      if (results[j][0] == comparison && j != i) {
+                        // Combines positions with the same title, but at different companies.
                         results[i][1] += results[j][1];
                         results.pop(results[j]);
                     }
@@ -85,6 +111,7 @@
         }
 
         function drawPieChart(sourceData) {
+            // https://google-developers.appspot.com/chart/interactive/docs/gallery/piechart
             var data = google.visualization.arrayToDataTable(sourceData);
             var options = { title: 'Career Title Distribution',
                             chartArea: { width: '90%',
@@ -107,6 +134,7 @@
 
                     /* In a better, more verdant world, LinkedIn would ask for at least a month alongside
                      a year value so that this graph could be more accurate, but alas, it is not. */
+                     
                     // note that months are zero-based in the JavaScript Date object, so month 3 is April
                     var startDate = new Date(profile.educations.values[i].startDate.year, 0, 1) || new Date(0, 0, 0);
                     var endDate = new Date(profile.educations.values[i].endDate.year, 11, 30) || new Date(0, 0, 0);
@@ -128,6 +156,7 @@
         }
 
         function drawTimeline(rows) {
+            // https://google-developers.appspot.com/chart/interactive/docs/gallery/timeline
             var container = document.getElementById('schoolWorkChart');
             var chart = new google.visualization.Timeline(container);
             var dataTable = new google.visualization.DataTable();
@@ -141,18 +170,20 @@
 
         function getWordCount(summary) {
             // Credit to Mike Grace: http://stackoverflow.com/a/4328722/1667207
-            summary = summary.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,""); // eliminate punctuation
-            summary = summary.replace(/\s{2,}/g," ");                       // eliminate multiple spaces
-            summary = summary.replace(/[^\x00-\x7F]+/g, "");                // replaces non-ASCII characters.
+            summary = summary.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,""); // Eliminates punctuation.
+            summary = summary.replace(/\s{2,}/g," ");                       // Eliminates multiple spaces.
+            summary = summary.replace(/[^\x00-\x7F]+/g, "");                // Replaces non-ASCII characters.
             summary = summary.toLowerCase().split(" ");
 
+            // Cherry-picked from http://en.wikipedia.org/wiki/Most_common_words_in_English
             var exceptedWords = ["the", "to", "of", "and", "a", "an",
                                  "in", "it", "its", "for", "on", "this",
                                  "is", "with", "as", "at", "by", "or"];
+                                 
             var results = [['Word', 'Count']];
-            var words = new Object();
+            var words = {};
 
-            //Inspired by Šime Vidas: http://stackoverflow.com/a/5668246/1667207
+            // Inspired by Šime Vidas: http://stackoverflow.com/a/5668246/1667207
             for (var i = 0; i < summary.length; i++) {
                 if (isNaN(summary[i])) {
                     if (summary[i] in words) {
@@ -168,6 +199,7 @@
                      if (words[key] > 1) {
                         var hit = [];
                          if (key === "i") {
+                            // Always consider yourself a proper noun!
                             hit[0] = "I";
                             hit[1] = words[key];
                         } else {
@@ -187,8 +219,8 @@
         }
 
         function drawWordChart(wordCount) {
+            // https://google-developers.appspot.com/chart/interactive/docs/gallery/columnchart
             var data = google.visualization.arrayToDataTable(wordCount);
-
             var options = { title: 'Words in LinkedIn summary that appear more than once',
                             hAxis: { titleTextStyle: {color: 'blue'}}};
 
@@ -207,6 +239,7 @@
                 drawPieChart(pieData);
                 var timelineData = createTimelineData(jobList, profile);
                 drawTimeline(timelineData);
+                
                 if (profile.summary) {
                     var wordCount = getWordCount(profile.summary);
                     if (wordCount) {
